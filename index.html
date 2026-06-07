@@ -122,7 +122,8 @@
       <div class="grow">
         <label class="fld">AI 服务商（用于出题 + 评分反馈）</label>
         <div class="seg" id="providerSeg">
-          <button data-v="gemini" class="active">Gemini · 免费</button>
+          <button data-v="hosted" class="active">✨ 免费直用</button>
+          <button data-v="gemini">自带 Gemini Key</button>
           <button data-v="openai">OpenAI</button>
           <button data-v="claude">Claude</button>
         </div>
@@ -135,12 +136,15 @@
         </div>
       </div>
     </div>
+    <div class="small muted hidden" id="hostedNote" style="margin-bottom:8px;padding:10px 12px;background:#13241b;border:1px solid #1f4332;border-radius:10px;color:#9bf0c4">
+      ✨ <b>免费直用</b>：不用填任何 key，直接「出题 → 录音 → 评分」就行（评分额度由作者提供）。转写用浏览器自带，请用<b>桌面版 Chrome / Edge</b>。
+    </div>
     <div class="row">
-      <div class="grow" style="min-width:260px">
+      <div class="grow" id="keyCol" style="min-width:260px">
         <label class="fld" id="keyLabel">OpenAI API Key</label>
         <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off" />
       </div>
-      <div style="width:200px">
+      <div id="modelCol" style="width:200px">
         <label class="fld">模型（可改）</label>
         <input type="text" id="model" placeholder="gpt-4o-mini" />
       </div>
@@ -180,7 +184,8 @@
       <span class="small muted" id="settingsMsg"></span>
     </div>
     <div class="small muted" style="margin-top:10px;line-height:1.6">
-      🆓 <b>想完全免费</b>（推荐先用这个）：服务商选「<b>Gemini · 免费</b>」+ 转写用「浏览器自带」。Gemini key 在
+      ✨ <b>免费直用</b>（默认，最省事）：什么都不用填，直接练——评分额度由作者的免费 key 提供。人多可能撞额度上限，那就改用下面「自带 Key」。<br/>
+      🆓 <b>自带 Gemini Key</b>（也免费、更稳）：用你自己的额度。key 在
       <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> 免费领，<b>不用信用卡</b>。<br/>
       🔑 想要更强/更稳：OpenAI <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com/api-keys</a>
       或 Claude <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>（按用量计费，一次几分钱）。<br/>
@@ -311,7 +316,7 @@ function browserSTTUsable(){ return srSupported() && !isIOS(); }
 
 /* ---------- 状态 ---------- */
 let state = {
-  provider: LS.get('cfg_provider','gemini'),
+  provider: LS.get('cfg_provider','hosted'),
   stt: LS.get('cfg_stt','browser'),
   apiKey: LS.get('cfg_apiKey',''),
   whisperKey: LS.get('cfg_whisperKey',''),
@@ -327,6 +332,7 @@ let state = {
 };
 
 const DEFAULT_MODEL = { openai:'gpt-4o-mini', claude:'claude-3-5-sonnet-latest', gemini:'gemini-2.0-flash' };
+const PROXY_URL = 'https://ielts-coach-proxy.myjarvispotter.workers.dev'; // 免费直用代理：key 藏服务器端
 function keyLabelFor(p){ return p==='openai'?'OpenAI API Key':p==='claude'?'Anthropic (Claude) API Key':'Google AI Studio Key（免费）'; }
 function keyPhFor(p){ return p==='gemini'?'AIza...':'sk-...'; }
 
@@ -349,8 +355,9 @@ function initSettings(){
       $('providerSeg').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));
       $('keyLabel').textContent = keyLabelFor(state.provider);
       $('apiKey').placeholder = keyPhFor(state.provider);
-      $('model').placeholder = DEFAULT_MODEL[state.provider];
-      syncWhisperKeyVisibility();
+      $('model').placeholder = DEFAULT_MODEL[state.provider]||'';
+      applyProviderUI();
+      refreshReady();
     };
   });
   // 转写方式；不可用的浏览器禁用「浏览器自带」
@@ -380,6 +387,7 @@ function initSettings(){
   $('keyLabel').textContent = keyLabelFor(state.provider);
   $('accent').value = state.accent;
   syncWhisperKeyVisibility();
+  applyProviderUI();
 
   $('saveSettings').onclick=()=>{
     state.apiKey=$('apiKey').value.trim();
@@ -402,14 +410,33 @@ function initSettings(){
 function activeModel(){ return state.model || DEFAULT_MODEL[state.provider]; }
 function openaiKeyForWhisper(){ return state.provider==='openai' ? state.apiKey : state.whisperKey; }
 
+/* 根据 provider 切换设置区显隐：免费直用(hosted)不需要 key/model，且转写强制浏览器自带 */
+function applyProviderUI(){
+  const hosted = state.provider==='hosted';
+  $('hostedNote').classList.toggle('hidden', !hosted);
+  $('keyCol').classList.toggle('hidden', hosted);
+  $('modelCol').classList.toggle('hidden', hosted);
+  const wb=$('sttSeg').querySelector('button[data-v=whisper]');
+  if(hosted){
+    state.stt='browser';
+    $('sttSeg').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x.dataset.v==='browser'));
+    if(wb){ wb.disabled=true; wb.title='免费直用模式下转写用浏览器自带'; }
+  }else{
+    if(wb){ wb.disabled=false; wb.title=''; }
+  }
+  syncWhisperKeyVisibility();
+}
+
 function refreshReady(){
-  const ready = !!state.apiKey;
-  const pname={openai:'OpenAI',claude:'Claude',gemini:'Gemini·免费'}[state.provider]||state.provider;
+  const hosted = state.provider==='hosted';
+  const ready = hosted || !!state.apiKey;
+  const pname = hosted ? '免费直用' : ({openai:'OpenAI',claude:'Claude',gemini:'Gemini·免费'}[state.provider]||state.provider);
   $('btnGenQ').disabled = !ready;
   $('readyChip').textContent = ready ? ('✓ 已就绪 · '+pname) : '未配置 Key — 先去设置';
   $('readyChip').className = 'chip-ready '+(ready?'ok':'warn');
 }
 function needKey(){
+  if(state.provider==='hosted') return false;   // 免费直用无需 key
   if(!state.apiKey){ $('settingsPanel').scrollIntoView({behavior:'smooth'});
     $('readyChip').textContent='请先填 Key'; return true; }
   return false;
@@ -868,20 +895,19 @@ $('btnSaveHist').onclick=()=>{
    LLM 调用
    ========================================================================= */
 async function callLLM(system,user,jsonMode){
+  if(state.provider==='hosted') return callHosted(system,user,jsonMode);
   if(state.provider==='openai') return callOpenAI(system,user,jsonMode);
   if(state.provider==='claude') return callClaude(system,user,jsonMode);
   return callGemini(system,user,jsonMode);
 }
-async function callGemini(system,user,jsonMode){
-  const url='https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(activeModel())+
-            ':generateContent?key='+encodeURIComponent(state.apiKey);
-  const body={ contents:[{role:'user',parts:[{text:user}]}],
+function geminiBody(system,user,jsonMode){
+  const b={ contents:[{role:'user',parts:[{text:user}]}],
     systemInstruction:{parts:[{text:system}]},
     generationConfig:{ temperature:0.4, maxOutputTokens:8192 } };
-  if(jsonMode) body.generationConfig.responseMimeType='application/json';
-  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  if(!r.ok){ const t=await r.text(); throw new Error('Gemini '+r.status+': '+shortErr(t)); }
-  const j=await r.json();
+  if(jsonMode) b.generationConfig.responseMimeType='application/json';
+  return b;
+}
+function parseGemini(j){
   const c=j.candidates&&j.candidates[0];
   if(!c){ const br=j.promptFeedback&&j.promptFeedback.blockReason; throw new Error(br?'内容被安全策略拦截，请换个话题重试':'模型返回为空，请重试'); }
   if(c.finishReason==='MAX_TOKENS') throw new Error('AI 回答过长被截断了，请把转写文本缩短一点或重试');
@@ -889,6 +915,19 @@ async function callGemini(system,user,jsonMode){
   const txt=(c.content&&c.content.parts&&c.content.parts.map(p=>p.text||'').join(''))||'';
   if(!txt) throw new Error('模型返回为空，请重试');
   return cleanJSON(txt);
+}
+async function callGemini(system,user,jsonMode){
+  const url='https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(activeModel())+
+            ':generateContent?key='+encodeURIComponent(state.apiKey);
+  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(geminiBody(system,user,jsonMode))});
+  if(!r.ok){ const t=await r.text(); throw new Error('Gemini '+r.status+': '+shortErr(t)); }
+  return parseGemini(await r.json());
+}
+async function callHosted(system,user,jsonMode){
+  const b=geminiBody(system,user,jsonMode); b.model='gemini-2.0-flash';
+  const r=await fetch(PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});
+  if(!r.ok){ const t=await r.text(); throw new Error('代理 '+r.status+': '+shortErr(t)); }
+  return parseGemini(await r.json());
 }
 async function callOpenAI(system,user,jsonMode){
   const body={ model:activeModel(), messages:[{role:'system',content:system},{role:'user',content:user}], temperature:0.4 };
