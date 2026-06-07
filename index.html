@@ -924,10 +924,17 @@ async function callGemini(system,user,jsonMode){
   return parseGemini(await r.json());
 }
 async function callHosted(system,user,jsonMode){
-  const b=geminiBody(system,user,jsonMode); b.model='gemini-2.0-flash';
-  const r=await fetch(PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});
+  // 经代理走 Groq（OpenAI 兼容格式）；模型由代理服务器端固定
+  const body={ messages:[{role:'system',content:system},{role:'user',content:user}], temperature:0.4 };
+  if(jsonMode) body.response_format={type:'json_object'};
+  const r=await fetch(PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   if(!r.ok){ const t=await r.text(); throw new Error('代理 '+r.status+': '+shortErr(t)); }
-  return parseGemini(await r.json());
+  const j=await r.json();
+  const choice=j&&j.choices&&j.choices[0];
+  if(choice&&choice.finish_reason==='length') throw new Error('AI 回答过长被截断了，请把转写文本缩短一点或重试');
+  const content=choice&&choice.message&&choice.message.content;
+  if(content==null) throw new Error('模型返回为空，请重试');
+  return cleanJSON(content);
 }
 async function callOpenAI(system,user,jsonMode){
   const body={ model:activeModel(), messages:[{role:'system',content:system},{role:'user',content:user}], temperature:0.4 };
