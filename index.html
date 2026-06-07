@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>雅思口语教练 · 练习版</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1f232c; --line:#2a2f3a;
+    --txt:#e8eaf0; --muted:#9aa3b2; --accent:#5b8cff; --accent2:#7c5bff;
+    --good:#34d399; --warn:#fbbf24; --bad:#f87171; --chip:#232834;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  .wrap{max-width:880px;margin:0 auto;padding:18px 16px 80px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+  header h1{font-size:19px;margin:0;font-weight:700;letter-spacing:.2px}
+  header h1 small{display:block;font-size:11px;color:var(--muted);font-weight:400;margin-top:2px}
+  .hdr-right{display:flex;align-items:center;gap:8px}
+  .btn{cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--txt);
+    padding:9px 14px;border-radius:10px;font-size:14px;transition:.15s;user-select:none}
+  .btn:hover{border-color:var(--accent);background:#222838}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;font-weight:600}
+  .btn.primary:hover{filter:brightness(1.08)}
+  .btn.danger{border-color:var(--bad);color:#ffd9d9}
+  .btn.ghost{background:transparent}
+  .btn.small{padding:6px 10px;font-size:12.5px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+  .panel h2{font-size:14px;margin:0 0 10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .grow{flex:1 1 auto}
+  label.fld{display:block;font-size:12.5px;color:var(--muted);margin:0 0 4px}
+  input[type=text],input[type=password],select,textarea{
+    width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+    padding:10px 12px;border-radius:10px;font-size:14px;font-family:inherit}
+  textarea{resize:vertical;min-height:90px;line-height:1.6}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+  .muted{color:var(--muted)}
+  .small{font-size:12.5px}
+  .pill{display:inline-flex;align-items:center;gap:6px;background:var(--chip);border:1px solid var(--line);
+    padding:6px 11px;border-radius:999px;font-size:13px;cursor:pointer;user-select:none}
+  .pill.active{border-color:var(--accent);background:#222a3d;color:#dce6ff}
+  .chip-ready{font-size:12px;padding:5px 11px;border-radius:999px;border:1px solid var(--line)}
+  .chip-ready.ok{background:#13241b;border-color:#1f4332;color:#9bf0c4}
+  .chip-ready.warn{background:#2a1518;border-color:#5a2730;color:#ffc9cf}
+  .banner{background:#1d1a12;border:1px solid #4a3d1a;color:#f3e2b3;font-size:12.5px;padding:10px 12px;border-radius:10px}
+  .hidden{display:none !important}
+  .q{font-size:18px;font-weight:600;margin:6px 0 2px;line-height:1.5}
+  .cue{background:var(--panel2);border:1px dashed var(--line);border-radius:12px;padding:14px}
+  .cue ul{margin:8px 0 0;padding-left:18px}
+  .cue li{margin:2px 0;color:#cdd4e1}
+  .timer{font-variant-numeric:tabular-nums;font-size:34px;font-weight:700;letter-spacing:1px}
+  .timer.warn{color:var(--warn)} .timer.bad{color:var(--bad)}
+  .rec-dot{width:11px;height:11px;border-radius:50%;background:var(--bad);display:inline-block;
+    animation:pulse 1s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+  .transcript{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;min-height:70px;
+    font-size:15px;line-height:1.7;white-space:pre-wrap}
+  .transcript[contenteditable=false]{opacity:.92}
+  .transcript .interim{color:var(--muted)}
+  .scoregrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .scorecard{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:13px}
+  .scorecard .name{font-size:12px;color:var(--muted)}
+  .scorecard .val{font-size:30px;font-weight:800;line-height:1.1;margin:2px 0 4px}
+  .scorecard .why{font-size:12.5px;color:#c4ccd9;line-height:1.5}
+  .overall{background:linear-gradient(135deg,#1c2333,#241c33);border:1px solid #34406a}
+  .sent{border-left:3px solid var(--line);padding:9px 12px;margin:9px 0;background:var(--panel2);border-radius:0 10px 10px 0}
+  .sent .orig{font-size:14.5px}
+  .sent .fix{font-size:13.5px;margin-top:5px;color:#cdeacd}
+  .sent .note{font-size:12.5px;color:var(--muted);margin-top:4px}
+  .tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;margin-right:6px;vertical-align:middle}
+  .tag.grammar{background:#3a2530;color:#ffc7d6} .tag.vocab{background:#2a2a3e;color:#cdc7ff}
+  .tag.fluency{background:#2a3320;color:#d6f3a0} .tag.good{background:#173024;color:#9bf0c4}
+  .sent.good{border-left-color:var(--good)} .sent.grammar{border-left-color:var(--bad)}
+  .sent.vocab{border-left-color:var(--accent2)} .sent.fluency{border-left-color:var(--warn)}
+  .modelans{background:#13241b;border:1px solid #1f4332;border-radius:12px;padding:13px;font-size:14.5px;line-height:1.7}
+  .drill{background:#1a1f2e;border:1px solid #2c3654;border-radius:12px;padding:13px;font-size:14px}
+  .hist-item{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:9px 11px;border:1px solid var(--line);
+    border-radius:10px;margin-bottom:7px;background:var(--panel2);cursor:pointer}
+  .hist-item:hover{border-color:var(--accent)}
+  .hist-item .meta{font-size:12px;color:var(--muted)}
+  .spinner{width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;
+    display:inline-block;animation:spin .8s linear infinite;vertical-align:middle}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .err{background:#2a1518;border:1px solid #5a2730;color:#ffc9cf;padding:10px 12px;border-radius:10px;font-size:13px}
+  audio{width:100%;margin-top:8px}
+  .foot{color:var(--muted);font-size:11.5px;text-align:center;margin-top:24px;line-height:1.7}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .seg button{background:var(--panel2);border:none;color:var(--muted);padding:8px 13px;cursor:pointer;font-size:13px}
+  .seg button.active{background:var(--accent);color:#fff}
+  .seg button:disabled{opacity:.4;cursor:not-allowed}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>🎙️ 雅思口语教练 <small>练习版 · AI 模拟反馈，非真实雅思分</small></h1>
+    <div class="hdr-right">
+      <span class="chip-ready warn" id="readyChip">未配置 Key</span>
+      <button class="btn small" id="btnSettings">⚙️ 设置</button>
+    </div>
+  </header>
+
+  <!-- 不安全上下文(file://)告警，由 JS 决定是否显示 -->
+  <div class="err hidden" id="insecureBanner" style="margin-bottom:14px"></div>
+
+  <!-- 顶部诚实声明 -->
+  <div class="banner" style="margin-bottom:14px">
+    ⚠️ 本工具用 AI 模拟评分，<b>仅供练习参考，不等于真实雅思成绩</b>。题目为 AI 按公开话题生成的「同风格练习题」，非真题。发音(Pronunciation)本版暂不评分。
+  </div>
+
+  <!-- ============ 设置面板 ============ -->
+  <section class="panel" id="settingsPanel">
+    <h2>⚙️ 设置（API Key 只存在你本机浏览器里）</h2>
+    <div class="row" style="margin-bottom:12px">
+      <div class="grow">
+        <label class="fld">AI 服务商（用于出题 + 评分反馈）</label>
+        <div class="seg" id="providerSeg">
+          <button data-v="gemini" class="active">Gemini · 免费</button>
+          <button data-v="openai">OpenAI</button>
+          <button data-v="claude">Claude</button>
+        </div>
+      </div>
+      <div class="grow">
+        <label class="fld">转写方式（把语音转成文字）</label>
+        <div class="seg" id="sttSeg">
+          <button data-v="browser" class="active">浏览器自带（免费）</button>
+          <button data-v="whisper">Whisper（需 OpenAI Key，更准）</button>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="grow" style="min-width:260px">
+        <label class="fld" id="keyLabel">OpenAI API Key</label>
+        <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off" />
+      </div>
+      <div style="width:200px">
+        <label class="fld">模型（可改）</label>
+        <input type="text" id="model" placeholder="gpt-4o-mini" />
+      </div>
+      <div style="width:160px">
+        <label class="fld">口音</label>
+        <select id="accent">
+          <option value="en-GB">英音 en-GB</option>
+          <option value="en-US">美音 en-US</option>
+          <option value="en-AU">澳音 en-AU</option>
+        </select>
+      </div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <div>
+        <label class="fld">评分尺度</label>
+        <div class="seg" id="strictSeg">
+          <button data-v="standard">标准</button>
+          <button data-v="strict" class="active">严格（默认）</button>
+        </div>
+      </div>
+      <div class="small muted grow" style="align-self:flex-end;padding-bottom:8px">
+        严格 = 像挑剔的考官，分数压低、卡在两档之间取低的；适合想看真实差距。
+      </div>
+    </div>
+    <!-- Whisper 专用 OpenAI Key：仅当用 Claude/Gemini 评分 + Whisper 转写时需要 -->
+    <div class="row hidden" id="whisperKeyWrap" style="margin-top:12px">
+      <div class="grow" style="min-width:260px">
+        <label class="fld">OpenAI Key（仅 Whisper 转写用，sk- 开头）</label>
+        <input type="password" id="whisperKey" placeholder="sk-..." autocomplete="off" />
+      </div>
+      <div class="small muted grow" style="align-self:flex-end;padding-bottom:8px">
+        你用 Claude 评分，但 Whisper 转写只认 OpenAI 的 key，所以这里要单独填一个 OpenAI key（或把转写改回「浏览器自带」）。
+      </div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn primary" id="saveSettings">保存设置</button>
+      <span class="small muted" id="settingsMsg"></span>
+    </div>
+    <div class="small muted" style="margin-top:10px;line-height:1.6">
+      🆓 <b>想完全免费</b>（推荐先用这个）：服务商选「<b>Gemini · 免费</b>」+ 转写用「浏览器自带」。Gemini key 在
+      <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> 免费领，<b>不用信用卡</b>。<br/>
+      🔑 想要更强/更稳：OpenAI <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com/api-keys</a>
+      或 Claude <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>（按用量计费，一次几分钱）。<br/>
+      🔒 Key 仅保存在本机 <code>localStorage</code>，不上传任何服务器。<b>但</b>纯网页直连 = key 写在浏览器里，
+      只适合你自己本机用；<b>不要把填了 key 的文件发给别人</b>，否则 key 可能被盗刷。
+    </div>
+  </section>
+
+  <!-- ============ 练习区 ============ -->
+  <section class="panel" id="practicePanel">
+    <h2>① 选 Part &amp; 出题</h2>
+    <div class="row" style="margin-bottom:12px">
+      <span class="pill active" data-part="1">Part 1 · 日常问答</span>
+      <span class="pill" data-part="2">Part 2 · 题卡独白</span>
+      <span class="pill" data-part="3">Part 3 · 深入讨论</span>
+      <div class="grow"></div>
+      <select id="topicSel" style="width:auto;min-width:150px">
+        <option value="">随机话题</option>
+      </select>
+      <button class="btn" id="btnGenQ">🎲 出题</button>
+    </div>
+    <div id="qError" class="err hidden"></div>
+
+    <div id="questionBox" class="hidden">
+      <div id="qNormal">
+        <div class="q" id="qText"></div>
+      </div>
+      <div id="qCue" class="cue hidden">
+        <div class="q" id="cueTitle"></div>
+        <div class="small muted" style="margin-top:6px">You should say:</div>
+        <ul id="cueBullets"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 录音区 -->
+  <section class="panel hidden" id="recordPanel">
+    <h2>② 录音作答</h2>
+
+    <!-- Part2 准备阶段 -->
+    <div id="prepBox" class="hidden" style="text-align:center;margin-bottom:8px">
+      <div class="small muted">准备时间（可打草稿）</div>
+      <div class="timer" id="prepTimer">1:00</div>
+      <button class="btn small" id="btnSkipPrep">准备好了，直接开始 →</button>
+    </div>
+
+    <div class="row" style="align-items:center;gap:16px">
+      <button class="btn primary" id="btnRec">● 开始录音</button>
+      <button class="btn danger hidden" id="btnStop">■ 停止</button>
+      <div class="row" id="recStatus" style="align-items:center;gap:8px"></div>
+      <div class="grow"></div>
+      <div class="timer" id="recTimer">0:00</div>
+    </div>
+
+    <div style="margin-top:12px">
+      <label class="fld">转写文本（停止录音后可手动修正，再点评分）</label>
+      <div class="transcript" id="transcript" contenteditable="true" spellcheck="false"></div>
+      <audio id="player" class="hidden" controls></audio>
+    </div>
+
+    <div class="row" style="margin-top:12px">
+      <button class="btn primary" id="btnFeedback">🧠 获取逐句反馈 &amp; 评分</button>
+      <button class="btn ghost small" id="btnClearT">清空文本</button>
+    </div>
+  </section>
+
+  <!-- 反馈区 -->
+  <section class="panel hidden" id="feedbackPanel">
+    <h2>③ AI 反馈（模拟）</h2>
+    <div id="fbLoading" class="hidden"><span class="spinner"></span> <span class="muted">AI 正在按官方四维分析你的回答…</span></div>
+    <div id="fbError" class="err hidden"></div>
+    <div id="fbContent" class="hidden">
+      <div class="scoregrid" style="margin-bottom:14px">
+        <div class="scorecard overall"><div class="name">三项均分（不含发音）</div><div class="val" id="sOverall">–</div><div class="why">流利+词汇+语法 三项平均，未含发音，非雅思总分</div></div>
+        <div class="scorecard"><div class="name">流利连贯 Fluency</div><div class="val" id="sFlu">–</div><div class="why" id="wFlu"></div></div>
+        <div class="scorecard"><div class="name">词汇 Lexical</div><div class="val" id="sLex">–</div><div class="why" id="wLex"></div></div>
+        <div class="scorecard"><div class="name">语法 Grammar</div><div class="val" id="sGra">–</div><div class="why" id="wGra"></div></div>
+      </div>
+
+      <h2 style="margin-top:6px">📝 逐句诊断</h2>
+      <div id="sentences"></div>
+
+      <h2 style="margin-top:16px">✨ Band 7-8 参考改写</h2>
+      <div class="modelans" id="modelAns"></div>
+
+      <h2 style="margin-top:16px">🎯 下一步练这个</h2>
+      <div class="drill" id="drill"></div>
+
+      <div class="row" style="margin-top:14px">
+        <button class="btn small ghost" id="btnSaveHist">💾 存入记录</button>
+        <span class="small muted" id="saveHistMsg"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 历史 -->
+  <section class="panel" id="historyPanel">
+    <h2>📚 练习记录（存在本机）</h2>
+    <div id="histList"><div class="small muted">还没有记录。完成一次反馈后点「存入记录」。</div></div>
+  </section>
+
+  <div class="foot">
+    单文件本地工具 · API Key 只存在你本机 · 录音转写与评分会发给所选服务（浏览器自带转写经浏览器厂商如 Google；Whisper/评分经 OpenAI / Anthropic）<br/>
+    题目由 AI 生成非真题 · 评分为 AI 模拟仅供练习 · Made for Max · 角度A：逐句可执行反馈
+  </div>
+</div>
+
+<script>
+"use strict";
+/* =========================================================================
+   雅思口语教练 · 练习版  (单文件，无依赖)
+   录音 -> 转写 -> LLM 按官方 band descriptor 逐句反馈 + 估分 + 改写 + 下一步
+   ========================================================================= */
+
+const $ = (id)=>document.getElementById(id);
+const LS = {
+  get:(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}},
+  set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))
+};
+
+/* ---------- 环境检测 ---------- */
+function isSecureCtx(){ return (typeof isSecureContext!=='undefined' && isSecureContext) ||
+  location.hostname==='localhost' || location.hostname==='127.0.0.1'; }
+function isIOS(){ return /iP(hone|ad|od)/.test(navigator.platform||'') ||
+  (/Mac/.test(navigator.userAgent) && (navigator.maxTouchPoints||0) > 1); }
+function srSupported(){ return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
+function browserSTTUsable(){ return srSupported() && !isIOS(); }
+
+/* ---------- 状态 ---------- */
+let state = {
+  provider: LS.get('cfg_provider','gemini'),
+  stt: LS.get('cfg_stt','browser'),
+  apiKey: LS.get('cfg_apiKey',''),
+  whisperKey: LS.get('cfg_whisperKey',''),
+  model: LS.get('cfg_model',''),
+  accent: LS.get('cfg_accent','en-GB'),
+  strict: LS.get('cfg_strict',true),
+  part: 1,
+  question: null,
+  transcript: '',
+  audioUrl: null,
+  lastFeedback: null,
+  viewingHistory: false
+};
+
+const DEFAULT_MODEL = { openai:'gpt-4o-mini', claude:'claude-3-5-sonnet-latest', gemini:'gemini-2.0-flash' };
+function keyLabelFor(p){ return p==='openai'?'OpenAI API Key':p==='claude'?'Anthropic (Claude) API Key':'Google AI Studio Key（免费）'; }
+function keyPhFor(p){ return p==='gemini'?'AIza...':'sk-...'; }
+
+/* 公开话题类别：让 LLM 生成"同风格"练习题，规避真题版权 */
+const TOPICS = ['Hometown','Work or study','Home / accommodation','Technology','Travel',
+  'Food','Hobbies & free time','Friends & family','Music','Sport & exercise','Nature & environment',
+  'Shopping','Education','Weather & seasons','Books & reading','Films & TV','Health',
+  'Social media','Festivals & celebrations','Future plans'];
+
+/* =========================================================================
+   设置
+   ========================================================================= */
+function whisperNeedsExtraKey(){ return state.stt==='whisper' && state.provider!=='openai'; }
+function syncWhisperKeyVisibility(){ $('whisperKeyWrap').classList.toggle('hidden', !whisperNeedsExtraKey()); }
+
+function initSettings(){
+  $('providerSeg').querySelectorAll('button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.v===state.provider);
+    b.onclick=()=>{ state.provider=b.dataset.v;
+      $('providerSeg').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));
+      $('keyLabel').textContent = keyLabelFor(state.provider);
+      $('apiKey').placeholder = keyPhFor(state.provider);
+      $('model').placeholder = DEFAULT_MODEL[state.provider];
+      syncWhisperKeyVisibility();
+    };
+  });
+  // 转写方式；不可用的浏览器禁用「浏览器自带」
+  const browserBtn = $('sttSeg').querySelector('button[data-v=browser]');
+  if(!browserSTTUsable()){
+    browserBtn.disabled = true;
+    browserBtn.title = isIOS() ? 'iPhone/iPad 上不支持，请用 Whisper' : '此浏览器不支持，请用 Chrome/Edge 或 Whisper';
+    if(state.stt==='browser'){ state.stt='whisper'; LS.set('cfg_stt','whisper'); }
+  }
+  $('sttSeg').querySelectorAll('button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.v===state.stt);
+    b.onclick=()=>{ if(b.disabled) return; state.stt=b.dataset.v;
+      $('sttSeg').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));
+      syncWhisperKeyVisibility(); };
+  });
+  // 评分尺度
+  $('strictSeg').querySelectorAll('button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.v===(state.strict?'strict':'standard'));
+    b.onclick=()=>{ state.strict=(b.dataset.v==='strict');
+      $('strictSeg').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b)); };
+  });
+  $('apiKey').value = state.apiKey;
+  $('apiKey').placeholder = keyPhFor(state.provider);
+  $('whisperKey').value = state.whisperKey;
+  $('model').value = state.model;
+  $('model').placeholder = DEFAULT_MODEL[state.provider];
+  $('keyLabel').textContent = keyLabelFor(state.provider);
+  $('accent').value = state.accent;
+  syncWhisperKeyVisibility();
+
+  $('saveSettings').onclick=()=>{
+    state.apiKey=$('apiKey').value.trim();
+    state.whisperKey=$('whisperKey').value.trim();
+    state.model=$('model').value.trim();
+    state.accent=$('accent').value;
+    LS.set('cfg_provider',state.provider);
+    LS.set('cfg_stt',state.stt);
+    LS.set('cfg_apiKey',state.apiKey);
+    LS.set('cfg_whisperKey',state.whisperKey);
+    LS.set('cfg_model',state.model);
+    LS.set('cfg_accent',state.accent);
+    LS.set('cfg_strict',state.strict);
+    refreshReady();
+    $('settingsMsg').textContent='✓ 已保存';
+    setTimeout(()=>$('settingsMsg').textContent='',2000);
+  };
+  $('btnSettings').onclick=()=>$('settingsPanel').scrollIntoView({behavior:'smooth'});
+}
+function activeModel(){ return state.model || DEFAULT_MODEL[state.provider]; }
+function openaiKeyForWhisper(){ return state.provider==='openai' ? state.apiKey : state.whisperKey; }
+
+function refreshReady(){
+  const ready = !!state.apiKey;
+  const pname={openai:'OpenAI',claude:'Claude',gemini:'Gemini·免费'}[state.provider]||state.provider;
+  $('btnGenQ').disabled = !ready;
+  $('readyChip').textContent = ready ? ('✓ 已就绪 · '+pname) : '未配置 Key — 先去设置';
+  $('readyChip').className = 'chip-ready '+(ready?'ok':'warn');
+}
+function needKey(){
+  if(!state.apiKey){ $('settingsPanel').scrollIntoView({behavior:'smooth'});
+    $('readyChip').textContent='请先填 Key'; return true; }
+  return false;
+}
+
+/* =========================================================================
+   话题 & Part
+   ========================================================================= */
+function initTopics(){
+  const sel=$('topicSel');
+  TOPICS.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; sel.appendChild(o); });
+}
+function initPartPills(){
+  document.querySelectorAll('.pill[data-part]').forEach(p=>{
+    p.onclick=()=>{ state.part=+p.dataset.part;
+      document.querySelectorAll('.pill[data-part]').forEach(x=>x.classList.toggle('active',x===p)); };
+  });
+}
+
+/* =========================================================================
+   出题
+   ========================================================================= */
+async function genQuestion(){
+  if(needKey()) return;
+  stopAllRecording();                 // 防止边录边出题
+  $('qError').classList.add('hidden');
+  const topic = $('topicSel').value || TOPICS[Math.floor(Math.random()*TOPICS.length)];
+  const part = state.part;
+  $('btnGenQ').disabled=true; $('btnGenQ').textContent='出题中…';
+  try{
+    const sys = "You are an IELTS Speaking examiner creating ORIGINAL practice questions in the authentic IELTS style. "+
+      "Do NOT copy real exam questions. Output strict JSON only.";
+    let user;
+    if(part===2){
+      user = `Create ONE original IELTS Speaking Part 2 cue card about the topic "${topic}". `+
+        `Return JSON: {"type":"cue","title":"Describe ...","bullets":["...","...","...","..."]}. `+
+        `Title starts with "Describe". 4 bullet points starting like "what", "where", "who", "why/how you felt".`;
+    }else{
+      const desc = part===1 ? "3 short, everyday Part 1 questions (warm-up style)" :
+                              "3 deeper, abstract Part 3 discussion questions (opinions, comparisons, future)";
+      user = `Create ${desc} about the topic "${topic}". Return JSON: {"type":"normal","questions":["...","...","..."]}.`;
+    }
+    const out = await callLLM(sys, user, true);
+    const data = JSON.parse(out);
+    if(part===2){
+      if(typeof data.title!=='string' || !Array.isArray(data.bullets) || !data.bullets.length)
+        throw new Error('题卡格式异常，请重试');
+      state.question={type:'cue',title:data.title,bullets:data.bullets,topic,part};
+    }else{
+      const qs = Array.isArray(data.questions)? data.questions.filter(x=>typeof x==='string'&&x.trim()) : [];
+      if(!qs.length) throw new Error('题目格式异常，请重试');
+      state.question={type:'normal',questions:qs,idx:0,topic,part};
+    }
+    state.viewingHistory=false;
+    renderQuestion();
+  }catch(e){
+    showQError(e.message);
+  }finally{
+    $('btnGenQ').disabled=!state.apiKey; $('btnGenQ').textContent='🎲 出题';
+  }
+}
+function showQError(msg){
+  $('qError').classList.remove('hidden');
+  $('qError').innerHTML='出题失败：'+escapeHtml(friendlyLLMError(msg))+' <button class="btn small" id="qRetry">重试</button>';
+  const rb=$('qRetry'); if(rb) rb.onclick=()=>{ $('qError').classList.add('hidden'); genQuestion(); };
+}
+
+function renderQuestion(){
+  $('questionBox').classList.remove('hidden');
+  const q=state.question;
+  if(q.type==='cue'){
+    $('qNormal').classList.add('hidden'); $('qCue').classList.remove('hidden');
+    $('cueTitle').textContent=q.title||'';
+    $('cueBullets').innerHTML=(q.bullets||[]).map(b=>`<li>${escapeHtml(b)}</li>`).join('');
+  }else{
+    $('qCue').classList.add('hidden'); $('qNormal').classList.remove('hidden');
+    const text=q.questions[q.idx];
+    $('qText').innerHTML = escapeHtml(text) +
+      (q.questions.length>1 ? ` <button class="btn small ghost" id="nextQ">换一题 (${q.idx+1}/${q.questions.length})</button>`:'');
+    const nb=$('nextQ'); if(nb) nb.onclick=()=>{ q.idx=(q.idx+1)%q.questions.length; renderQuestion(); };
+  }
+  $('recordPanel').classList.remove('hidden');
+  resetRecording();
+  if(q.type==='cue'){ startPrep(); } else { $('prepBox').classList.add('hidden'); }
+  $('recordPanel').scrollIntoView({behavior:'smooth'});
+}
+function currentQuestionText(){
+  const q=state.question; if(!q) return '';
+  if(q.type==='cue') return (q.title||'')+' — You should say: '+(q.bullets||[]).join('; ');
+  return q.questions[q.idx]||'';
+}
+
+/* =========================================================================
+   计时器
+   ========================================================================= */
+let prepInt=null, recInt=null, recSeconds=0, prepSeconds=60;
+const PART2_MAX=120;
+function fmt(s){const m=Math.floor(s/60);const ss=s%60;return m+':'+String(ss).padStart(2,'0');}
+
+function startPrep(){
+  $('prepBox').classList.remove('hidden');
+  prepSeconds=60; $('prepTimer').textContent=fmt(prepSeconds); $('prepTimer').className='timer';
+  clearInterval(prepInt);
+  prepInt=setInterval(()=>{
+    prepSeconds--; $('prepTimer').textContent=fmt(prepSeconds);
+    if(prepSeconds<=10)$('prepTimer').className='timer warn';
+    if(prepSeconds<=0){ clearInterval(prepInt); $('prepBox').classList.add('hidden'); startRecording(); }
+  },1000);
+}
+$('btnSkipPrep').onclick=()=>{ clearInterval(prepInt); $('prepBox').classList.add('hidden'); startRecording(); };
+
+function startRecTimer(){
+  recSeconds=0; $('recTimer').textContent='0:00'; $('recTimer').className='timer';
+  clearInterval(recInt);
+  recInt=setInterval(()=>{
+    recSeconds++; $('recTimer').textContent=fmt(recSeconds);
+    if(state.question && state.question.type==='cue'){
+      const left=PART2_MAX-recSeconds;
+      if(left<=20)$('recTimer').className='timer warn';
+      if(left<=5)$('recTimer').className='timer bad';
+      if(left<=0){ stopRecording(); $('recStatus').innerHTML='<span class="small muted">⏱ 已到 2 分钟，自动停止（Part 2 限时）。可修正文本后评分。</span>'; }
+    }
+  },1000);
+}
+
+/* =========================================================================
+   录音 + 转写
+   ========================================================================= */
+let mediaRecorder=null, audioChunks=[], recognition=null, recognizing=false, manualStop=false;
+let mediaStream=null, finalTranscript='';
+
+function showRecErr(html){
+  clearInterval(recInt); clearInterval(prepInt);
+  $('btnStop').classList.add('hidden'); $('btnRec').classList.remove('hidden');
+  $('recTimer').className='timer';
+  $('recStatus').innerHTML='<span class="err small">'+html+'</span>';
+}
+
+function resetRecording(){
+  stopAllRecording();
+  recSeconds=0; $('recTimer').textContent='0:00'; $('recTimer').className='timer';
+  finalTranscript=''; state.transcript='';
+  $('transcript').textContent=''; $('transcript').setAttribute('contenteditable','true');
+  $('recStatus').innerHTML='';
+  $('btnRec').classList.remove('hidden'); $('btnStop').classList.add('hidden');
+  const p=$('player'); p.classList.add('hidden'); p.removeAttribute('src');
+  $('feedbackPanel').classList.add('hidden');
+}
+
+/* 彻底停掉一切录音/识别/麦克风，且不触发残留的 Whisper 转写 */
+function stopAllRecording(){
+  clearInterval(recInt); clearInterval(prepInt);
+  recognizing=false; manualStop=true;
+  if(recognition){
+    try{ recognition.onresult=recognition.onend=recognition.onerror=null; }catch(e){}
+    try{ recognition.abort ? recognition.abort() : recognition.stop(); }catch(e){}
+    recognition=null;
+  }
+  if(mediaRecorder){
+    try{ mediaRecorder.ondataavailable=mediaRecorder.onstop=null; }catch(e){}
+    try{ if(mediaRecorder.state!=='inactive') mediaRecorder.stop(); }catch(e){}
+    mediaRecorder=null;
+  }
+  if(mediaStream){ try{ mediaStream.getTracks().forEach(t=>t.stop()); }catch(e){} mediaStream=null; }
+  audioChunks=[];
+}
+
+async function startRecording(){
+  if(!state.question){ alert('请先出题'); return; }
+  // 1) 安全上下文
+  if(!isSecureCtx()){
+    showRecErr('当前是直接打开文件(file://)，浏览器禁用了麦克风。请用文件夹里的「打开雅思教练.command」启动（走 localhost），或把答案手动打进下面文本框再评分。');
+    return;
+  }
+  // 2) 分模式预检
+  if(state.stt==='whisper'){
+    if(!openaiKeyForWhisper()){
+      showRecErr('Whisper 转写需要 OpenAI Key（sk- 开头）。'+(state.provider!=='openai'?'当前用 Claude 评分，请在设置里单独填 OpenAI Key，或把转写改回「浏览器自带」。':'请在设置里填 OpenAI Key。'));
+      $('settingsPanel').scrollIntoView({behavior:'smooth'}); return;
+    }
+  }else{
+    if(isIOS()){ showRecErr('iPhone/iPad 上不支持免费转写（iOS 的 Chrome/Edge 也是 Safari 内核）。请在设置里改用 Whisper（需 OpenAI Key）。'); return; }
+    if(!srSupported()){ showRecErr('此浏览器不支持免费转写。桌面端请用 Chrome/Edge，或在设置里改用 Whisper（需 OpenAI Key）。'); return; }
+  }
+  // 3) 进入录音
+  manualStop=false;
+  $('btnRec').classList.add('hidden'); $('btnStop').classList.remove('hidden');
+  $('recStatus').innerHTML='<span class="rec-dot"></span><span class="small">录音中…</span>';
+  startRecTimer();
+  if(state.stt==='whisper'){ await startWhisperRec(); } else { startBrowserRec(); }
+}
+
+function stopRecording(){
+  manualStop=true;
+  clearInterval(recInt);
+  $('btnStop').classList.add('hidden'); $('btnRec').classList.remove('hidden');
+  $('recStatus').innerHTML='';
+  if(state.stt==='whisper'){ stopWhisperRec(); } else { stopBrowserRec(); }
+}
+
+/* ----- 浏览器 Web Speech API ----- */
+function startBrowserRec(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  finalTranscript = state.transcript || '';
+  $('transcript').setAttribute('contenteditable','false');   // 识别中不可编辑，避免被覆盖/光标乱跳
+  recognition = new SR();
+  recognition.lang = state.accent;
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.onresult = (e)=>{
+    let interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const t=e.results[i][0].transcript;
+      if(e.results[i].isFinal) finalTranscript += t+' '; else interim += t;
+    }
+    state.transcript = finalTranscript;
+    $('transcript').innerHTML = escapeHtml(finalTranscript) + '<span class="interim">'+escapeHtml(interim)+'</span>';
+  };
+  recognition.onerror = (e)=>{
+    const fatal = ['not-allowed','service-not-allowed','audio-capture','network'].includes(e.error);
+    if(e.error==='no-speech'){
+      $('recStatus').innerHTML='<span class="rec-dot"></span><span class="small">没听到声音，请继续说…</span>'; return;
+    }
+    if(fatal){
+      recognizing=false;                       // 阻止 onend 重启
+      clearInterval(recInt);
+      $('btnStop').classList.add('hidden'); $('btnRec').classList.remove('hidden');
+      const msg = (e.error==='not-allowed'||e.error==='service-not-allowed')
+        ? '麦克风被拒绝。请点地址栏左侧的锁/麦克风图标允许权限后重试。'
+        : (e.error==='network') ? '语音服务网络错误（浏览器转写需联网，国内可能不稳）。可在设置改用 Whisper。'
+        : '找不到麦克风，或被其它应用占用，请关闭后重试。';
+      $('transcript').setAttribute('contenteditable','true');
+      $('recStatus').innerHTML='<span class="err small">'+msg+'</span>';
+    }
+  };
+  recognition.onend = ()=>{
+    if(recognizing && !manualStop){
+      setTimeout(()=>{ if(recognizing && !manualStop){ try{ recognition.start(); }catch(e){ recognizing=false; } } }, 300);
+    }
+  };
+  try{ recognition.start(); recognizing=true; }
+  catch(e){ recognizing=false; showRecErr('无法启动转写：'+escapeHtml(e.message)); $('transcript').setAttribute('contenteditable','true'); }
+}
+function stopBrowserRec(){
+  recognizing=false;
+  if(recognition){ try{recognition.stop()}catch(e){} }
+  state.transcript = (finalTranscript||'').trim();
+  $('transcript').textContent = state.transcript;
+  $('transcript').setAttribute('contenteditable','true');
+}
+
+/* ----- Whisper (MediaRecorder -> OpenAI) ----- */
+async function startWhisperRec(){
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder==='undefined'){
+    showRecErr('当前环境无法访问麦克风（需 https 或 localhost 打开，不能 file:// 双击）。'); return;
+  }
+  try{ mediaStream = await navigator.mediaDevices.getUserMedia({audio:true}); }
+  catch(e){ showRecErr('无法访问麦克风：'+escapeHtml(e.message)); return; }
+  audioChunks=[];
+  let mime='audio/webm';
+  if(!MediaRecorder.isTypeSupported(mime)){ mime = MediaRecorder.isTypeSupported('audio/mp4')?'audio/mp4':''; }
+  try{ mediaRecorder = mime? new MediaRecorder(mediaStream,{mimeType:mime}) : new MediaRecorder(mediaStream); }
+  catch(e){ if(mediaStream){mediaStream.getTracks().forEach(t=>t.stop());mediaStream=null;} showRecErr('录音器初始化失败：'+escapeHtml(e.message)); return; }
+  $('recStatus').innerHTML='<span class="rec-dot"></span><span class="small">录音中…（Whisper 模式停止后才上传转写，约几秒）</span>';
+  mediaRecorder.ondataavailable=(e)=>{ if(e.data.size>0) audioChunks.push(e.data); };
+  mediaRecorder.onstop=async ()=>{
+    if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream=null; }
+    if(!audioChunks.length){ showRecErr('没录到音频，请重录。'); return; }
+    const blob=new Blob(audioChunks,{type: mediaRecorder.mimeType||'audio/webm'});
+    if(blob.size < 1600){ showRecErr('录音太短了，没识别到内容，请重录。'); return; }
+    const url=URL.createObjectURL(blob);
+    const p=$('player'); p.src=url; p.classList.remove('hidden'); state.audioUrl=url;
+    $('recStatus').innerHTML='<span class="spinner"></span><span class="small muted"> Whisper 转写中…</span>';
+    try{
+      const text=await whisperTranscribe(blob);
+      if(!text){ $('recStatus').innerHTML='<span class="err small">Whisper 没识别到内容，可能没说话或太短，请重录。</span>'; return; }
+      state.transcript=text; $('transcript').textContent=text;
+      $('transcript').setAttribute('contenteditable','true');
+      $('recStatus').innerHTML='';
+    }catch(e){ $('recStatus').innerHTML='<span class="err small">转写失败：'+escapeHtml(friendlyLLMError(e.message))+'</span>'; }
+  };
+  mediaRecorder.start();
+}
+function stopWhisperRec(){ if(mediaRecorder && mediaRecorder.state!=='inactive'){ mediaRecorder.stop(); } }
+
+function extForMime(t){
+  t=(t||'').toLowerCase();
+  if(t.includes('mp4')||t.includes('m4a')||t.includes('aac')) return 'mp4';
+  if(t.includes('ogg')) return 'ogg';
+  if(t.includes('wav')) return 'wav';
+  if(t.includes('mpeg')||t.includes('mp3')) return 'mp3';
+  if(t.includes('flac')) return 'flac';
+  return 'webm';
+}
+async function whisperTranscribe(blob){
+  const key = openaiKeyForWhisper();
+  if(!key) throw new Error('需要 OpenAI Key');
+  const fd=new FormData();
+  fd.append('file', blob, 'audio.'+extForMime(blob.type));
+  fd.append('model','whisper-1'); fd.append('language','en');
+  const r=await fetch('https://api.openai.com/v1/audio/transcriptions',{
+    method:'POST', headers:{'Authorization':'Bearer '+key}, body:fd });
+  if(!r.ok){ const t=await r.text(); throw new Error('Whisper '+r.status+': '+shortErr(t)); }
+  const j=await r.json();
+  return (j.text||'').trim();
+}
+
+/* 录音按钮 */
+$('btnRec').onclick=()=>{ if(needKey())return; startRecording(); };
+$('btnStop').onclick=stopRecording;
+$('btnClearT').onclick=()=>{ state.transcript=''; finalTranscript=''; $('transcript').textContent=''; };
+$('transcript').addEventListener('input',()=>{ state.transcript=$('transcript').innerText; });
+
+/* =========================================================================
+   反馈（核心：逐句可执行反馈）
+   ========================================================================= */
+const BAND_DESC = `OFFICIAL IELTS Speaking band descriptors (public version) — score these THREE on the 0-9 scale (use .5):
+FLUENCY & COHERENCE:
+ B4: cannot respond without noticeable pauses; speech may be slow with frequent repetition/self-correction; links only basic sentences; breakdowns in coherence.
+ B5: usually maintains flow but uses repetition/self-correction/slow speech; over-uses connectives; fluent on simple, breaks down on complex.
+ B6: willing to speak at length, but coherence lost at times by repetition/self-correction/hesitation; connectives not always appropriate.
+ B7: speaks at length without noticeable effort; some language hesitation; uses connectives & discourse markers flexibly.
+ B8: fluent with only rare repetition/self-correction; hesitation is content-related; develops topics coherently.
+LEXICAL RESOURCE:
+ B4: basic vocabulary for personal info; insufficient for unfamiliar topics; frequent word-choice errors; rarely paraphrases.
+ B5: manages topics but limited flexibility; attempts paraphrase with mixed success.
+ B6: wide enough vocab to discuss topics & make meaning clear despite inaccuracies; generally paraphrases successfully.
+ B7: flexible vocab; some less common & idiomatic items, some awareness of style/collocation, with some inappropriate choices.
+ B8: wide vocab readily & flexibly, precise meaning; skilful less common & idiomatic items; effective paraphrase.
+GRAMMATICAL RANGE & ACCURACY:
+ B4: basic sentence forms and some correct simple sentences; subordinate structures rare; errors frequent, may cause misunderstanding.
+ B5: basic forms reasonably accurate; limited complex structures, usually with errors that may cause difficulty.
+ B6: mix of simple & complex with limited flexibility; complex structures often have errors though rarely impede understanding.
+ B7: range of complex structures with some flexibility; frequently error-free sentences, though some errors persist.
+ B8: wide range flexibly; most sentences error-free, occasional inappropriacies or non-systematic basic errors.`;
+
+async function getFeedback(){
+  if(needKey()) return;
+  const text=(state.transcript||'').trim();
+  if(text.split(/\s+/).filter(Boolean).length<8){ alert('转写文本太短了，先录一段完整的回答（建议至少两三句）。'); return; }
+  state.viewingHistory=false;
+  $('feedbackPanel').classList.remove('hidden');
+  $('fbContent').classList.add('hidden'); $('fbError').classList.add('hidden'); $('fbLoading').classList.remove('hidden');
+  $('btnSaveHist').classList.remove('hidden');
+  $('feedbackPanel').scrollIntoView({behavior:'smooth'});
+  $('btnFeedback').disabled=true;
+
+  const partName = state.part===2?'Part 2 (long-turn cue-card monologue)':('Part '+state.part);
+  const sentCount = state.part===1 ? '2-4' : (state.part===3 ? '3-6' : '4-8');
+  const STRICT = `
+STRICT MODE — be a demanding, hard-marking examiner:
+- Chinese candidates routinely OVER-estimate their level. Calibrate conservatively and err toward the LOWER band. When an answer sits between two bands, give the LOWER one.
+- Do NOT award 7 or above unless the answer clearly shows ALL of: a range of complex structures used flexibly with mostly error-free sentences; some less-common / idiomatic vocabulary used appropriately; and sustained fluency without effortful hesitation or heavy repetition.
+- Actively penalise: fillers and hesitation (um, like, you know), repetition and self-correction, basic/high-frequency vocabulary, mostly simple sentences, every grammatical error, memorised-sounding chunks, and short or underdeveloped answers.
+- A short, simple, or error-containing answer is band 5-6, NOT 7. In each "reason", name the SPECIFIC evidence (quote a word/phrase) that caps the band.`;
+  const sys = `You are a strict IELTS Speaking examiner-trainer.
+You score a candidate's spoken answer (a transcript) for ${partName}.
+${BAND_DESC}
+${state.strict?STRICT:''}
+
+RULES:
+- Pronunciation cannot be judged from text, so DO NOT score it.
+- The scale is genuinely 0-9. Do NOT floor at 5: if the answer is fragmented, very short, or hard to follow, award 4.5 or below per the descriptors. Reserve 8+ for near-native. Use .5 steps. Do NOT inflate.
+- "model_answer": a natural band 7.5-8 spoken version of THE SAME answer (same ideas), improved; at most ~120 words.
+- "sentences": pick the ${sentCount} most useful teaching points (fewer is fine for short answers; do NOT split phrases or invent points to hit the count). Each: the original phrase, a tag, a concrete "better" rewrite (for tag "good" leave better ""), a short Chinese note explaining WHY (扣分点/亮点). Include a "good" item ONLY if something is genuinely strong.
+- Write reason/note/overall_comment/next_drill in CHINESE (learner is a Chinese speaker). English only for example phrases/rewrites.
+Output STRICT JSON only, no markdown:
+{
+ "bands":{"fluency":{"score":6.5,"reason":"中文"},"lexical":{"score":6,"reason":"中文"},"grammar":{"score":6,"reason":"中文"}},
+ "sentences":[{"original":"...","tag":"grammar|vocab|fluency|good","better":"...","note":"中文"}],
+ "model_answer":"...",
+ "next_drill":"一个具体的5分钟练习任务，针对最弱项，用中文写（示例句可用英文）",
+ "overall_comment":"2-3句中文总结"
+}`;
+  const user = `QUESTION: ${currentQuestionText()}\n\nCANDIDATE TRANSCRIPT:\n"""${text}"""`;
+
+  try{
+    const out = await callLLM(sys,user,true);
+    const data = JSON.parse(out);
+    renderFeedback(data);
+    state.lastFeedback=data;
+  }catch(e){
+    $('fbLoading').classList.add('hidden'); $('fbError').classList.remove('hidden');
+    $('fbError').textContent='获取反馈失败：'+friendlyLLMError(e.message);
+  }finally{ $('btnFeedback').disabled=false; }
+}
+
+function renderFeedback(d){
+  $('fbLoading').classList.add('hidden'); $('fbContent').classList.remove('hidden');
+  const b=d.bands||{};
+  const f=num(b.fluency&&b.fluency.score), l=num(b.lexical&&b.lexical.score), g=num(b.grammar&&b.grammar.score);
+  const arr=[f,l,g].filter(x=>x!=null);
+  const overall = arr.length? Math.round((arr.reduce((a,c)=>a+c,0)/arr.length)*2)/2 : null;
+  $('sOverall').textContent = overall!=null?overall.toFixed(1):'–';
+  $('sFlu').textContent=f!=null?f:'–'; $('wFlu').textContent=(b.fluency&&b.fluency.reason)||'';
+  $('sLex').textContent=l!=null?l:'–'; $('wLex').textContent=(b.lexical&&b.lexical.reason)||'';
+  $('sGra').textContent=g!=null?g:'–'; $('wGra').textContent=(b.grammar&&b.grammar.reason)||'';
+
+  const sents=(d.sentences||[]).map(s=>{
+    const tag=(s.tag||'').toLowerCase();
+    const tagName={grammar:'语法',vocab:'词汇',fluency:'流利',good:'亮点'}[tag]||tag;
+    return `<div class="sent ${tag}">
+      <div class="orig"><span class="tag ${tag}">${tagName}</span>${escapeHtml(s.original||'')}</div>
+      ${s.better?`<div class="fix">✅ ${escapeHtml(s.better)}</div>`:''}
+      ${s.note?`<div class="note">${escapeHtml(s.note)}</div>`:''}</div>`;
+  }).join('');
+  $('sentences').innerHTML = sents || '<div class="muted small">（无逐句点评）</div>';
+  $('modelAns').textContent = d.model_answer||'';
+  $('drill').innerHTML = `<b>${escapeHtml(d.next_drill||'')}</b>` +
+    (d.overall_comment?`<div class="small muted" style="margin-top:8px">${escapeHtml(d.overall_comment)}</div>`:'');
+}
+$('btnFeedback').onclick=getFeedback;
+
+/* =========================================================================
+   历史
+   ========================================================================= */
+function overallOf(fb){
+  const b=fb&&fb.bands||{};
+  const arr=[b.fluency,b.lexical,b.grammar].map(x=>x&&num(x.score)).filter(x=>x!=null);
+  return arr.length?(Math.round((arr.reduce((a,c)=>a+c,0)/arr.length)*2)/2).toFixed(1):'–';
+}
+function loadHistory(){
+  const hist=LS.get('history',[]);
+  if(!hist.length){ $('histList').innerHTML='<div class="small muted">还没有记录。完成一次反馈后点「存入记录」。</div>'; return; }
+  $('histList').innerHTML = hist.map((h,i)=>
+    `<div class="hist-item" data-i="${i}">
+      <div><div>${escapeHtml((h.q||'').slice(0,60))}</div>
+      <div class="meta">Part ${h.part} · ${escapeHtml(h.topic||'')} · 综合 ${h.overall||'–'}</div></div>
+      <button class="btn small danger" data-del="${i}">删</button></div>`).join('');
+  $('histList').querySelectorAll('.hist-item').forEach(el=>{
+    el.onclick=(ev)=>{
+      if(ev.target.dataset.del!=null){ ev.stopPropagation();
+        const h=LS.get('history',[]); h.splice(+ev.target.dataset.del,1); LS.set('history',h); loadHistory(); return; }
+      const h=LS.get('history',[])[+el.dataset.i];
+      if(h&&h.feedback){
+        state.viewingHistory=true; state.part=h.part;
+        state.question={type:'normal',questions:[h.q||''],idx:0,topic:h.topic||'',part:h.part};
+        state.transcript=h.transcript||''; state.lastFeedback=h.feedback;
+        renderFeedback(h.feedback);
+        $('btnSaveHist').classList.add('hidden');   // 看历史时不重复存
+        $('feedbackPanel').classList.remove('hidden'); $('feedbackPanel').scrollIntoView({behavior:'smooth'});
+      }
+    };
+  });
+}
+$('btnSaveHist').onclick=()=>{
+  if(!state.lastFeedback || state.viewingHistory) return;
+  const hist=LS.get('history',[]);
+  hist.unshift({ q:currentQuestionText(), part:state.part, topic:state.question&&state.question.topic,
+    overall:overallOf(state.lastFeedback), transcript:state.transcript, feedback:state.lastFeedback, t:0 });
+  LS.set('history',hist.slice(0,50)); loadHistory();
+  $('saveHistMsg').textContent='✓ 已存'; setTimeout(()=>$('saveHistMsg').textContent='',1800);
+};
+
+/* =========================================================================
+   LLM 调用
+   ========================================================================= */
+async function callLLM(system,user,jsonMode){
+  if(state.provider==='openai') return callOpenAI(system,user,jsonMode);
+  if(state.provider==='claude') return callClaude(system,user,jsonMode);
+  return callGemini(system,user,jsonMode);
+}
+async function callGemini(system,user,jsonMode){
+  const url='https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(activeModel())+
+            ':generateContent?key='+encodeURIComponent(state.apiKey);
+  const body={ contents:[{role:'user',parts:[{text:user}]}],
+    systemInstruction:{parts:[{text:system}]},
+    generationConfig:{ temperature:0.4, maxOutputTokens:8192 } };
+  if(jsonMode) body.generationConfig.responseMimeType='application/json';
+  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok){ const t=await r.text(); throw new Error('Gemini '+r.status+': '+shortErr(t)); }
+  const j=await r.json();
+  const c=j.candidates&&j.candidates[0];
+  if(!c){ const br=j.promptFeedback&&j.promptFeedback.blockReason; throw new Error(br?'内容被安全策略拦截，请换个话题重试':'模型返回为空，请重试'); }
+  if(c.finishReason==='MAX_TOKENS') throw new Error('AI 回答过长被截断了，请把转写文本缩短一点或重试');
+  if(c.finishReason==='SAFETY'||c.finishReason==='RECITATION') throw new Error('内容被安全策略拦截，请换个话题重试');
+  const txt=(c.content&&c.content.parts&&c.content.parts.map(p=>p.text||'').join(''))||'';
+  if(!txt) throw new Error('模型返回为空，请重试');
+  return cleanJSON(txt);
+}
+async function callOpenAI(system,user,jsonMode){
+  const body={ model:activeModel(), messages:[{role:'system',content:system},{role:'user',content:user}], temperature:0.4 };
+  if(jsonMode) body.response_format={type:'json_object'};
+  const r=await fetch('https://api.openai.com/v1/chat/completions',{
+    method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey}, body:JSON.stringify(body) });
+  if(!r.ok){ const t=await r.text(); throw new Error('OpenAI '+r.status+': '+shortErr(t)); }
+  const j=await r.json();
+  const choice = j && j.choices && j.choices[0];
+  if(choice && choice.finish_reason==='length') throw new Error('AI 回答过长被截断了，请把转写文本缩短一点或重试');
+  const content = choice && choice.message && choice.message.content;
+  if(content==null) throw new Error(choice&&choice.finish_reason==='content_filter' ? '内容被安全策略拦截，请换个话题重试' : '模型返回为空，请重试');
+  return cleanJSON(content);
+}
+async function callClaude(system,user,jsonMode){
+  const sys = system + (jsonMode? "\nReturn ONLY valid JSON, no markdown fences." : "");
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':state.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({ model:activeModel(), max_tokens:4000, temperature:0.4, system:sys, messages:[{role:'user',content:user}] }) });
+  if(!r.ok){ const t=await r.text(); throw new Error('Claude '+r.status+': '+shortErr(t)); }
+  const j=await r.json();
+  if(j.stop_reason==='max_tokens') throw new Error('AI 回答过长被截断了，请把转写文本缩短一点或重试');
+  const txt=(j.content&&j.content[0]&&j.content[0].text)||'';
+  if(!txt) throw new Error('模型返回为空，请重试');
+  return cleanJSON(txt);
+}
+
+/* =========================================================================
+   工具
+   ========================================================================= */
+function cleanJSON(s){
+  if(!s) return s;
+  s=s.trim();
+  try{ JSON.parse(s); return s; }catch(e){}
+  const m=s.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if(m){ const inner=m[1].trim(); try{ JSON.parse(inner); return inner; }catch(e){} s=inner; }
+  const a=s.indexOf('{'), b=s.lastIndexOf('}');
+  if(a>=0&&b>a) s=s.slice(a,b+1);
+  return s;
+}
+function shortErr(t){ try{const j=JSON.parse(t); return (j.error&&(j.error.message||j.error))||t.slice(0,200);}catch(e){return t.slice(0,200);} }
+function friendlyLLMError(msg){
+  msg=msg||'';
+  if(/\b401\b|invalid_api_key|incorrect api key|invalid x-api-key|authentication/i.test(msg))
+    return 'API Key 验证失败（401）。常见原因：服务商和 Key 不匹配（OpenAI 的 key 以 sk- 开头、Claude 的以 sk-ant- 开头），或 key 失效。去「设置」检查。';
+  if(/model.*(not found|does not exist)|\b404\b|invalid model|unsupported model/i.test(msg))
+    return '模型名可能填错了。去「设置」把「模型」一栏清空用默认，或填正确的模型名。';
+  if(/\b429\b|rate limit|quota|insufficient_quota/i.test(msg)) return '请求太频繁或额度/余额用尽，稍等再试或检查账户额度。';
+  if(/failed to fetch|networkerror|load failed/i.test(msg)) return '连不上 API（可能需要代理/VPN，或网络问题）。';
+  if(/JSON|Unexpected token|Unexpected end|Unterminated/i.test(msg)) return 'AI 返回格式异常（不是合法 JSON），点重试通常就好。';
+  return msg;
+}
+function num(x){ const n=parseFloat(x); return isNaN(n)?null:n; }
+function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* =========================================================================
+   初始化
+   ========================================================================= */
+function init(){
+  initSettings(); initTopics(); initPartPills(); loadHistory(); refreshReady();
+  $('btnGenQ').onclick=genQuestion;
+  if(!isSecureCtx()){
+    $('insecureBanner').classList.remove('hidden');
+    $('insecureBanner').innerHTML='⚠️ 你是直接双击打开文件(file://)，<b>浏览器在这种模式下会禁用麦克风，录音用不了</b>。请改用同文件夹里的「<b>打开雅思教练.command</b>」启动（自动走 localhost），或手动把答案打进文本框也能评分。';
+  }
+  if(!state.apiKey){ $('settingsPanel').scrollIntoView(); }
+}
+init();
+</script>
+</body>
+</html>
